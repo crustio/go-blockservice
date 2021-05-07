@@ -3,6 +3,7 @@ module github.com/ipfs/go-blockservice
 go 1.13
 
 require (
+	github.com/crustio/go-ipfs-encryptor v0.0.0-20210419092531-3f22dbe7ffc7
 	github.com/ipfs/go-bitswap v0.1.8
 	github.com/ipfs/go-block-format v0.0.2
 	github.com/ipfs/go-cid v0.0.5

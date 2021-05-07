@@ -227,6 +227,21 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 
 	block, err := bs.Get(c)
 	if err == nil {
+		// Seal
+		if root, err := crust.GetRootFromSealContext(ctx); err == nil {
+			bv := block.RawData()
+			needSeal, path, err := crust.Seal(root, false, bv)
+			if needSeal {
+				if err != nil {
+					return nil, err
+				}
+				err = bs.Put(NewWarpedSealedBlock(path, len(bv), c))
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+
 		return block, nil
 	}
 
@@ -244,6 +259,21 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 			return nil, err
 		}
 		log.Event(ctx, "BlockService.BlockFetched", c)
+
+		// Seal
+		if root, err := crust.GetRootFromSealContext(ctx); err == nil {
+			bv := block.RawData()
+			needSeal, path, err := crust.Seal(root, false, bv)
+			if needSeal {
+				if err != nil {
+					return nil, err
+				}
+				err = bs.Put(NewWarpedSealedBlock(path, len(bv), c))
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 		return blk, nil
 	}
 
