@@ -269,6 +269,7 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 				if err != nil {
 					return nil, err
 				}
+
 				err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
 				if err != nil {
 					return nil, err
