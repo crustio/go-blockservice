@@ -263,7 +263,7 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 
 		// Seal
 		if root, err := crust.GetRootFromSealContext(ctx); err == nil {
-			bv := block.RawData()
+			bv := blk.RawData()
 			needSeal, path, err := crust.Worker.Seal(root, false, bv)
 			if needSeal {
 				if err != nil {
