@@ -236,9 +236,13 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 				if err != nil {
 					return nil, err
 				}
-				err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
-				if err != nil {
-					return nil, err
+
+				if !crust.GetStoreFlag(root, block.Cid()) {
+					err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
+					if err != nil {
+						return nil, err
+					}
+					crust.SetStoreFlag(root, block.Cid())
 				}
 			}
 		}
@@ -270,9 +274,12 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 					return nil, err
 				}
 
-				err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
-				if err != nil {
-					return nil, err
+				if !crust.GetStoreFlag(root, blk.Cid()) {
+					err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
+					if err != nil {
+						return nil, err
+					}
+					crust.SetStoreFlag(root, blk.Cid())
 				}
 			}
 		}
