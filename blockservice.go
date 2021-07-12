@@ -9,6 +9,7 @@ import (
 	"io"
 	"sync"
 
+	crust "github.com/crustio/go-ipfs-encryptor/crust"
 	blocks "github.com/ipfs/go-block-format"
 	cid "github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -227,6 +228,23 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 
 	block, err := bs.Get(c)
 	if err == nil {
+		// Seal
+		if root, err := crust.GetRootFromSealContext(ctx); err == nil {
+			bv := block.RawData()
+			needSeal, path, err := crust.Worker.Seal(root, false, bv)
+			if err != nil {
+				return nil, err
+			}
+
+			if needSeal && !crust.GetStoreFlag(root, block.Cid()) {
+				err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
+				if err != nil {
+					return nil, err
+				}
+				crust.SetStoreFlag(root, block.Cid())
+			}
+		}
+
 		return block, nil
 	}
 
@@ -244,6 +262,23 @@ func getBlock(ctx context.Context, c cid.Cid, bs blockstore.Blockstore, fget fun
 			return nil, err
 		}
 		log.Event(ctx, "BlockService.BlockFetched", c)
+
+		// Seal
+		if root, err := crust.GetRootFromSealContext(ctx); err == nil {
+			bv := blk.RawData()
+			needSeal, path, err := crust.Worker.Seal(root, false, bv)
+			if err != nil {
+				return nil, err
+			}
+
+			if needSeal && !crust.GetStoreFlag(root, blk.Cid()) {
+				err = bs.Put(crust.NewWarpedSealedBlock(path, len(bv), c))
+				if err != nil {
+					return nil, err
+				}
+				crust.SetStoreFlag(root, blk.Cid())
+			}
+		}
 		return blk, nil
 	}
 
